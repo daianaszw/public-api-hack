@@ -1,6 +1,7 @@
 import { Transition, Dialog } from "@headlessui/react";
 import React, {Fragment} from "react";
 import {useFetcher} from "@remix-run/react";
+import Loading from "~/components/loading";
 
 export default function Gift({onClose = () => {}}) {
     let fetcher = useFetcher();
@@ -23,20 +24,21 @@ export default function Gift({onClose = () => {}}) {
                         leaveTo="opacity-0 scale-95"
                     >
                         <Dialog.Panel>
-                            <fetcher.Form method="POST" className="space-y-2 flex flex-col mt-10 md:my-20 -md:w-full bg-white md:w-[568px] md:rounded-xl px-5 pt-6 pb-8 md:p-[60px] md:pt-12 rounded-t-lg transition-all transform overflow-hidden">
+                            <fetcher.Form method="POST" className="space-y-4 flex flex-col mt-10 md:my-20 -md:w-full bg-white md:w-[568px] md:rounded-xl px-5 pt-6 pb-8 md:p-[60px] md:pt-12 rounded-t-lg transition-all transform overflow-hidden">
+                                <h2 className="text-3xl font-medium">The Gift of Giving</h2>
                                 <input hidden defaultValue="gift" name="_action"/>
-
                                 <div className="flex items-center gap-2">
                                     <p>Name</p>
                                     <input name="name" className="border p-2 rounded-md"/>
                                 </div><div className="flex items-center gap-2">
-                                    <p>Amount</p>
+                                    <p>Amount $</p>
                                     <input name="amount" className="border p-2 rounded-md" defaultValue={20} type="number" min="18"/>
                                 </div>
-                                <div className="flex items-center justify-around">
-                                    <button className="p-2 border rounded-md" onClick={onClose}>Cancel</button>
-                                    <button type="submit" className="p-2 border rounded-md">Gift</button>
+                                <div className="flex items-center gap-3">
+                                    <button className="p-2 border rounded-md flex-1" onClick={onClose}>Cancel</button>
+                                    <button type="submit" className="p-2 border text-white rounded-md flex-1 bg-green-dark">Gift</button>
                                 </div>
+                                {fetcher.state !== "idle" && <Loading/>}
                                 {!!fetcher?.data?.url &&
                                     <div>
                                         <p>Share your gift</p>

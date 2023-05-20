@@ -1,8 +1,7 @@
-import React, {Fragment, useEffect, useRef, useState} from 'react';
+import React, {Fragment, useRef, useState} from 'react';
 import { select, interpolate } from 'd3';
 import { Transition, Dialog } from "@headlessui/react";
 import Donate from "~/components/donate";
-import {useFetcher} from "@remix-run/react";
 import Gift from "~/components/gift";
 import Surprise from "~/components/surprise";
 
@@ -15,7 +14,7 @@ const data = [
     {
         name: "Duplicate last donation",
         id: 2,
-        description: "Your last donation to XX of XX amount will be duplicated"
+        description: "Do you want to duplicate your last donation made on Daffy?"
     },
     {
         name: "Challenge a Friend",
@@ -33,9 +32,9 @@ const data = [
         description: "You can donate to a random non-profit and invite friends to match it"
     },
     {
-        name: "?",
+        name: "Secret Prize",
         id: 6,
-        description: "Surprise! You won:"
+        description: ""
     }
 ];
 
@@ -43,48 +42,27 @@ const Wheel = () => {
     const wheelRef = useRef(null);
     let [result, setResult] = useState(null);
     let [accept, setAccept] = useState(false);
-    let fetcher = useFetcher();
-    let nonProfit = fetcher?.data?.nonProfit
-    let amount = fetcher?.data?.amount
 
     function resetResult() {
         setResult(null);
         setAccept(false);
     }
 
-    useEffect(() => {
-        // todo: move this to each component and dont send non profit and amount
-        if (!result || !accept || !!fetcher.data || fetcher.state !== "idle") return;
-        if ([1, 3, 5, 6].includes(result.id)) {
-            fetcher.submit(
-                { _action: "get-non-profit" },
-                {
-                    method: "POST",
-                }
-            );
-            return;
-        }
-        if (result.id === 2) {
-            fetcher.submit(
-                { _action: "get-last-donation" },
-                {
-                    method: "POST",
-                }
-            );
-            return;
-        }
-    }, [result, accept, fetcher])
-
     function renderPrize() {
         let MODALS = {
-            1: <Donate onClose={resetResult} nonProfit={nonProfit}/>,
-            2: <Donate onClose={resetResult} nonProfit={nonProfit} defaultAmount={amount}/>,
-            3: <Donate onClose={resetResult} nonProfit={nonProfit} challenge/>,
+            1: <Donate onClose={resetResult} action="get-non-profit"/>,
+            2: <Donate onClose={resetResult} action="get-last-donation"/>,
+            3: <Donate onClose={resetResult} action="get-non-profit" challenge/>,
             4: <Gift onClose={resetResult}/>,
-            5: <Donate onClose={resetResult} nonProfit={nonProfit} share/>,
+            5: <Donate onClose={resetResult} action="get-non-profit" share/>,
             6: <Surprise onClose={resetResult} />,
         }
         return MODALS[result.id] || null;
+    }
+
+    function retry() {
+        resetResult()
+        handleSpinClick()
     }
 
     const handleSpinClick = () => {
@@ -120,101 +98,63 @@ const Wheel = () => {
     };
 
     return (
-        <div className="w-full flex flex-col justify-center items-center">
+        <div className="flex flex-col justify-center items-center">
             {result && !accept &&
                 <ConfirmModal
                     result={result}
                     onClose={resetResult}
                     setAccept={() => setAccept(true)}
-                    nonProfit={nonProfit}
+                    onRetry={retry}
                 />
             }
             {result && accept && renderPrize()}
             <div ref={wheelRef} >
                 <svg width="500" height="500">
-                    <g className="chartcontainer" transform="translate(250,250)">
-                        <g className="wheel">
-                            <g className="slice">
-                                <path fill="#e5dff6" d="M0,-230A230,230,0,0,1,199.186,-115L0,0Z"></path>
-                                <text transform="rotate(-60)translate(220)" textAnchor="end">Random donation</text>
+                    <g transform="translate(250,250)">
+                        <g className="font-medium text-neutral-dark wheel">
+                            <g>
+                                <path fill="#BDEDDE" d="M0,-230A230,230,0,0,1,199.186,-115L0,0Z"></path>
+                                <text fill="currentColor" transform="rotate(-60)translate(220)" textAnchor="end">Random donation</text>
                             </g>
-                            <g className="slice">
-                                <path fill="#e5f6df" d="M199.186,-115A230,230,0,0,1,199.186,115L0,0Z"></path>
-                                <text transform="rotate(0)translate(220)" textAnchor="end">Duplicate last donation
+                            <g>
+                                <path fill="#CCBEFF" d="M199.186,-115A230,230,0,0,1,199.186,115L0,0Z"></path>
+                                <text fill="currentColor" transform="rotate(0)translate(220)" textAnchor="end">Duplicate last donation
                                 </text>
                             </g>
-                            <g className="slice">
-                                <path fill="#dfe5f6" d="M199.186,115A230,230,0,0,1,0,230L0,0Z"></path>
-                                <text transform="rotate(59.99999999999997)translate(220)" textAnchor="end">Challenge a
+                            <g>
+                                <path fill="#CBD973" d="M199.186,115A230,230,0,0,1,0,230L0,0Z"></path>
+                                <text fill="currentColor" transform="rotate(59.99999999999997)translate(220)" textAnchor="end">Challenge a
                                     Friend
                                 </text>
                             </g>
-                            <g className="slice">
-                                <path fill="#ebd4f3" d="M0,230A230,230,0,0,1,-199.186,115L0,0Z"></path>
-                                <text transform="rotate(119.99999999999997)translate(220)" textAnchor="end">The gift of
+                            <g>
+                                <path fill="#BDEDDE" d="M0,230A230,230,0,0,1,-199.186,115L0,0Z"></path>
+                                <text fill="currentColor" transform="rotate(119.99999999999997)translate(220)" textAnchor="end">The gift of
                                     Giving
                                 </text>
                             </g>
-                            <g className="slice">
-                                <path fill="#f6f0df" d="M-199.186,115A230,230,0,0,1,-199.186,-115L0,0Z"></path>
-                                <text transform="rotate(180)translate(220)" textAnchor="end">Donate &amp; Match with
-                                    Friends
+                            <g>
+                                <path fill="#CCBEFF" d="M-199.186,115A230,230,0,0,1,-199.186,-115L0,0Z"></path>
+                                <text fill="currentColor" transform="rotate(180)translate(220)" textAnchor="end">Donate &amp; Match
                                 </text>
                             </g>
-                            <g className="slice">
-                                <path fill="#e5f6df" d="M-199.186,-115A230,230,0,0,1,0,-230L0,0Z"></path>
-                                <text transform="rotate(239.99999999999994)translate(220)" textAnchor="end">?</text>
+                            <g>
+                                <path fill="#CBD973" d="M-199.186,-115A230,230,0,0,1,0,-230L0,0Z"></path>
+                                <text fill="currentColor" transform="rotate(239.99999999999994)translate(220)" textAnchor="end">Secret Prize &#128064;</text>
                             </g>
                         </g>
                     </g>
                     <g className="arrow" transform="translate(235, 12)">
-                        <path d="M0 0 H30 L 15 25.980762113533157Z" style={{fill: "rgb(0, 8, 9)"}}></path>
+                        <path d="M0 0 H30 L 15 25.980762113533157Z" style={{fill: "#418B74"}}></path>
                     </g>
-                    <g className="chartcontainer" transform="translate(250,250)">
-                        <g className="wheel">
-                            <g className="slice">
-                                <path fill="#e5dff6" d="M0,-230A230,230,0,0,1,199.186,-115L0,0Z"></path>
-                                <text transform="rotate(-60)translate(220)" textAnchor="end">Random donation</text>
-                            </g>
-                            <g className="slice">
-                                <path fill="#e5f6df" d="M199.186,-115A230,230,0,0,1,199.186,115L0,0Z"></path>
-                                <text transform="rotate(0)translate(220)" textAnchor="end">Duplicate last donation
-                                </text>
-                            </g>
-                            <g className="slice">
-                                <path fill="#dfe5f6" d="M199.186,115A230,230,0,0,1,0,230L0,0Z"></path>
-                                <text transform="rotate(59.99999999999997)translate(220)" textAnchor="end">Challenge a
-                                    Friend
-                                </text>
-                            </g>
-                            <g className="slice">
-                                <path fill="#ebd4f3" d="M0,230A230,230,0,0,1,-199.186,115L0,0Z"></path>
-                                <text transform="rotate(119.99999999999997)translate(220)" textAnchor="end">The gift of
-                                    Giving
-                                </text>
-                            </g>
-                            <g className="slice">
-                                <path fill="#f6f0df" d="M-199.186,115A230,230,0,0,1,-199.186,-115L0,0Z"></path>
-                                <text transform="rotate(180)translate(220)" textAnchor="end">Donate &amp; Match with
-                                    Friends
-                                </text>
-                            </g>
-                            <g className="slice">
-                                <path fill="#e5f6df" d="M-199.186,-115A230,230,0,0,1,0,-230L0,0Z"></path>
-                                <text transform="rotate(239.99999999999994)translate(220)" textAnchor="end">?</text>
-                            </g>
-                        </g>
-                    </g>
-                    <g className="arrow" transform="translate(235, 12)">
-                        <path d="M0 0 H30 L 15 25.980762113533157Z" style={{fill: "rgb(0, 8, 9)"}}></path>
-                    </g>
-                </svg></div>
-            <button onClick={handleSpinClick} className="border rounded-md p-3">Spin the Wheel!</button>
+                </svg>
+            </div>
+            <button onClick={handleSpinClick} className="text-white bg-green-dark rounded-md p-3 font-semibold text-lg">Spin the Wheel!</button>
         </div>
     );
 };
 
-function ConfirmModal({result, onClose, setAccept, nonProfit}) {
+function ConfirmModal({result, onClose, setAccept, onRetry}) {
    return (
        <Transition appear show as={Fragment}>
         <Dialog
@@ -233,11 +173,14 @@ function ConfirmModal({result, onClose, setAccept, nonProfit}) {
                     leaveTo="opacity-0 scale-95"
                 >
                     <Dialog.Panel>
-                        <div className="mt-10 md:my-20 -md:w-full bg-white md:w-[568px] md:rounded-xl px-5 pt-6 pb-8 md:p-[60px] md:pt-12 rounded-t-lg transition-all transform overflow-hidden">
-                            <h2 className="text-xl font-medium">Congratulations!</h2>
+                        <div className="space-y-4 mt-10 md:my-20 -md:w-full bg-white md:w-[568px] md:rounded-xl px-5 pt-6 pb-8 md:p-[60px] md:pt-12 rounded-t-lg transition-all transform overflow-hidden">
+                            <h2 className="text-3xl font-medium">Congratulations!</h2>
                             <h3 className="text-lg">You got {result.name}</h3>
                             <h4 className="">{result.description}</h4>
-                            <button className="p-4 border rounded-md" onClick={setAccept}>Take me to the prize</button>
+                            <div className="space-x-4 mt-2">
+                                <button className="p-3 border rounded-md" onClick={onRetry}>Try again</button>
+                                <button className="p-3 text-white rounded-md bg-green-dark" onClick={setAccept}>Take me to the prize</button>
+                            </div>
                         </div>
                     </Dialog.Panel>
                 </Transition.Child>

@@ -1,7 +1,9 @@
 import type {ActionFunction, LoaderFunction} from "@remix-run/node";
 import SpinningWheel from "~/components/spinning-wheel";
 import {json} from "@remix-run/node";
-import {ShouldReloadFunction, useFetcher, useLoaderData} from "@remix-run/react";
+import type {ShouldReloadFunction} from "@remix-run/react";
+import { Listbox } from '@headlessui/react'
+import { useFetcher, useLoaderData} from "@remix-run/react";
 import {commitSession, getSession} from "~/services/session.server";
 
 // todo: user should authenticate
@@ -20,7 +22,7 @@ export let loader: LoaderFunction = async ({ request }) => {
     if (causes.error) {
         causes = []
     }
-    return json({causes: causes, defaultCause: cause});
+    return json({causes: causes, defaultCauseId: cause});
 };
 
 
@@ -143,13 +145,22 @@ export let action: ActionFunction = async ({ request }) => {
     }
 }
 
-export default function Index() {
-   let {causes, defaultCause} = useLoaderData();
-    let fetcher = useFetcher();
+function ListBoxArrow() {
+    return (
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9.46911 10.4096C8.67726 11.2668 7.32274 11.2668 6.53089 10.4096L0.708853 4.1071C-0.474447 2.82614 0.434096 0.75 2.17796 0.75L13.822 0.750001C15.5659 0.750002 16.4744 2.82614 15.2911 4.1071L9.46911 10.4096Z" fill="#307560"/>
+        </svg>
+    )
+}
 
-    function updateCause(event) {
+export default function Index() {
+   let {causes, defaultCauseId} = useLoaderData();
+    let fetcher = useFetcher();
+    let defaultCause = causes.find(c => c.id === defaultCauseId)
+
+    function updateCause(cause) {
         fetcher.submit(
-            { cause: event.target.value, _action: "set-cause" },
+            { cause: cause.id, _action: "set-cause" },
             {
                 method: "POST",
             }
@@ -157,16 +168,52 @@ export default function Index() {
     }
 
     return (
-    <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.4" }} className="p-4 space-y-4">
-      <h1 className="text-xl font-medium">The Giving Wheel</h1>
-        <div className="max-w-md">
-            <label htmlFor="cause" className="block text-sm font-medium leading-6 text-gray-900">Cause</label>
-            <select id="cause" name="cause" onChange={updateCause} defaultValue={defaultCause}
-                    className="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6">
-                {causes.map(cause => <option key={cause.id} value={cause.id}>{cause.name}</option>)}
-            </select>
+    <div
+        style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.4", background: "linear-gradient(54deg, rgba(219,234,130,1) 0%, rgba(209,231,224,1) 35%, rgba(255,255,255,1) 100%)" }}
+         className="flex min-h-screen gap-20 justify-center items-center py-5 text-neutral-dark"
+    >
+        <div className="flex flex-col gap-6">
+            <div className="max-w-sm space-y-2">
+            <h2 className="text-neutral-dark text-sm">Choose a cause</h2>
+            <Listbox name="cause" onChange={updateCause} defaultValue={defaultCause}>
+                <div className="relative">
+                    <Listbox.Button
+                        className="flex w-full cursor-default text-left focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-orange-300 text-lg"
+                    >
+                        {({value}) =>
+                            <>
+                                <span className="flex-1 truncate bg-green-dark py-2 pl-3 pr-10 text-white rounded-l-2xl">{value.name}</span>
+                                <span className="max-w-fit pointer-events-none rounded-r-2xl border-2 border-green-dark py-[14px] px-4">
+                                    <ListBoxArrow/>
+                                </span>
+                            </>
+                        }
+                    </Listbox.Button>
+                    <Listbox.Options className="absolute mt-1 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                        {causes.map((cause) => (
+                            <Listbox.Option key={cause.id} value={cause} className={({ active }) =>
+                                `relative cursor-default select-none py-2 pl-3 ${
+                                    active ? 'bg-green-light/40 text-green-dark' : 'text-neutral-regular'
+                                }`
+                            }>
+                                {({ selected }) => (
+                                    <span
+                                        className={`block truncate ${
+                                            selected ? 'font-medium' : 'font-normal'
+                                        }`}
+                                    >
+                                    {cause.name}
+                                  </span>
+                                )}
+                            </Listbox.Option>
+                        ))}
+                    </Listbox.Options>
+                </div>
+            </Listbox>
+            </div>
+            <h1 className="text-5xl font-bold text-green-darker">The Giving Wheel</h1>
         </div>
-      <SpinningWheel />
+        <SpinningWheel />
     </div>
   );
 }

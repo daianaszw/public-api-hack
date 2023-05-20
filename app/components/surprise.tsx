@@ -1,6 +1,9 @@
 import { Transition, Dialog } from "@headlessui/react";
 import React, {Fragment, useEffect, useState} from "react";
 import {Form, useFetcher} from "@remix-run/react";
+import Loading from "~/components/loading";
+
+// todo: add success messages
 
 // todo: for now since we don't authenticate users and we only have 1 user id on the env file, this only generates a donation/gift made by the user
 function DuplicateLastDonation({onClose}) {
@@ -18,34 +21,36 @@ function DuplicateLastDonation({onClose}) {
         );
     }, [fetcher])
 
+    if (fetcher.state !== "idle") return <Loading/>
+
     return (
-        <Form method="POST" className="space-y-2 flex flex-col">
-            <h2>We will duplicate your last donation!</h2>
+        <Form method="POST" className="space-y-4 flex flex-col">
+            <h2 className="text-3xl font-medium">We will duplicate your last donation!</h2>
             <h3>Check the details below:</h3>
             <input hidden defaultValue="prize-donate" name="_action"/>
             {nonProfit && nonProfit?.ein &&
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col gap-2">
                     <input hidden defaultValue={nonProfit.ein} name="ein"/>
                     <div className="flex items-center gap-2">
-                        <p>Non Profit</p>
+                        <p>Non Profit:</p>
                         <p>{nonProfit.name}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                        <p>EIN</p>
+                        <p>EIN:</p>
                         <p>{nonProfit.ein}</p>
                     </div>
                 </div>
             }
             {amount &&
                 <div className="flex items-center gap-2">
-                    <p>Amount</p>
-                    <p>{amount}</p>
+                    <p>Amount:</p>
+                    <p>${amount}</p>
                 </div>
             }
             {/*<p>Note</p>*/}
-            <div className="flex items-center justify-around">
-                <button className="p-2 border rounded-md" onClick={onClose}>Cancel</button>
-                <button type="submit" className="p-2 border rounded-md">Donate</button>
+            <div className="flex items-center gap-3">
+                <button className="p-2 border rounded-md flex-1" onClick={onClose}>Cancel</button>
+                <button type="submit" className="p-2 border text-white rounded-md bg-green-dark flex-1">Donate</button>
             </div>
         </Form>
     )
@@ -65,34 +70,36 @@ function Gift({onClose}) {
     }, [userFetcher])
 
     return (
-        <giftFetcher.Form method="POST" className="space-y-2 flex flex-col">
-            <h2>You just won a Daffy Gift on us!</h2>
+        <giftFetcher.Form method="POST" className="space-y-4 flex flex-col">
+            <h2 className="text-3xl font-medium">You just won a Daffy Gift on us!</h2>
             <h3>Check the details below:</h3>
             <input hidden defaultValue="prize-gift" name="_action"/>
             <input hidden defaultValue="20" name="amount"/>
+            {userFetcher.state !== "idle" && <Loading/>}
             {userFetcher?.data?.name &&
                 <>
                     <input hidden defaultValue={userFetcher.data.name} name="name"/>
                     <div className="flex items-center gap-2">
-                        <p>Name</p>
+                        <p>Name:</p>
                         <p>{userFetcher.data.name}</p>
                     </div>
                 </>
             }
             <div className="flex items-center gap-2">
-                <p>Amount</p>
-                <p>20</p>
+                <p>Amount:</p>
+                <p>$20</p>
             </div>
 
             {/*<p>Note</p>*/}
-            <div className="flex items-center justify-around">
-                <button className="p-2 border rounded-md" onClick={onClose}>Cancel</button>
-                <button type="submit" className="p-2 border rounded-md">Get Gift</button>
+            <div className="flex items-center gap-3">
+                <button className="p-2 border rounded-md flex-1" onClick={onClose}>Cancel</button>
+                <button type="submit" className="p-2 border text-white rounded-md bg-green-dark flex-1">Get Gift</button>
             </div>
+            {giftFetcher.state !== "idle" && <Loading/>}
             {!!giftFetcher?.data?.url &&
                 <div>
-                    <p>Here's your gift</p>
-                    <p className="select-all whitespace-nowrap overflow-hidden text-ellipsis">{giftFetcher.data.url}</p>
+                    <p>Click here to redeem your gift</p>
+                    <a href={giftFetcher.data.url} target="_blank" className="block underline whitespace-nowrap overflow-hidden text-ellipsis" rel="noreferrer">{giftFetcher.data.url}</a>
                 </div>
             }
         </giftFetcher.Form>
@@ -113,31 +120,31 @@ function MatchDonation({onClose}) {
     }, [fetcher])
 
     return (
-        <Form method="POST" className="space-y-2 flex flex-col">
-            <h2>We math your donation</h2>
+        <Form method="POST" className="space-y-4 flex flex-col">
+            <h2 className="text-3xl font-medium">We match your donation</h2>
             <h3>Check the details below:</h3>
             <input hidden defaultValue="prize-donate" name="_action"/>
             {nonProfit && nonProfit.ein &&
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col gap-2">
                     <input hidden defaultValue={nonProfit.ein} name="ein"/>
                     <div className="flex items-center gap-2">
-                        <p>Non Profit</p>
+                        <p>Non Profit:</p>
                         <p>{nonProfit.name}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                        <p>EIN</p>
+                        <p>EIN:</p>
                         <p>{nonProfit.ein}</p>
                     </div>
                 </div>
             }
             <div className="flex items-center gap-2">
-                <p>Amount</p>
+                <p>Amount: $</p>
                 <input name="amount" className="border p-2 rounded-md" defaultValue={20} type="number" min="18"/>
             </div>
             {/*<p>Note</p>*/}
-            <div className="flex items-center justify-around">
-                <button className="p-2 border rounded-md" onClick={onClose}>Cancel</button>
-                <button type="submit" className="p-2 border rounded-md">Donate</button>
+            <div className="flex items-center gap-3">
+                <button className="p-2 border rounded-md flex-1" onClick={onClose}>Cancel</button>
+                <button type="submit" className="p-2 border text-white rounded-md bg-green-dark flex-1">Donate</button>
             </div>
         </Form>
     )
@@ -148,7 +155,7 @@ export default function Surprise({onClose = () => {}}) {
 
     useEffect(() => {
         let random = Math.floor(Math.random() * 2);
-        setPrize(2)
+        setPrize(random)
     }, [])
 
     // 0: you duplicate their last donation

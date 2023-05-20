@@ -1,9 +1,22 @@
 import { Transition, Dialog } from "@headlessui/react";
-import React, {Fragment} from "react";
+import React, {Fragment, useEffect} from "react";
 import {useFetcher} from "@remix-run/react";
+import Loading from "~/components/loading";
 
-export default function Donate({onClose = () => {}, nonProfit, defaultAmount = "", share = false, challenge = false}) {
+export default function Donate({onClose = () => {}, action, share = false, challenge = false}) {
     let fetcher = useFetcher()
+    let dataFetcher = useFetcher()
+
+    useEffect(() => {
+        if (!!dataFetcher.data || dataFetcher.state !== "idle") return;
+        dataFetcher.submit(
+            { _action: action },
+            {
+                method: "POST",
+            }
+        );
+    }, [dataFetcher, action])
+
     return (
         <Transition appear show as={Fragment}>
             <Dialog
@@ -22,37 +35,45 @@ export default function Donate({onClose = () => {}, nonProfit, defaultAmount = "
                         leaveTo="opacity-0 scale-95"
                     >
                         <Dialog.Panel>
-                            <fetcher.Form method="POST" className="space-y-2 flex flex-col mt-10 md:my-20 -md:w-full bg-white md:w-[568px] md:rounded-xl px-5 pt-6 pb-8 md:p-[60px] md:pt-12 rounded-t-lg transition-all transform overflow-hidden">
+                            <fetcher.Form method="POST" className="space-y-4 flex flex-col mt-10 md:my-20 -md:w-full bg-white md:w-[568px] md:rounded-xl px-5 pt-6 pb-8 md:p-[60px] md:pt-12 rounded-t-lg transition-all transform overflow-hidden">
+                                {!share && !challenge && <h2 className="text-3xl font-medium">Donate to a non-profit</h2>}
+                                {challenge && <h2 className="text-3xl font-medium">Challenge a friend to donate</h2>}
+                                {share && <h2 className="text-3xl font-medium">Donate to a non-profit and invite friends to match it</h2>}
                                 {challenge ?
                                     <input hidden defaultValue="get-donate-url" name="_action"/> :
                                     <input hidden defaultValue="donate" name="_action"/>
                                 }
-                                {nonProfit && nonProfit.ein &&
-                                    <div className="flex items-center gap-2">
-                                        <input hidden defaultValue={nonProfit.ein} name="ein"/>
-                                        <input hidden defaultValue={nonProfit.id} name="id"/>
+                                {dataFetcher.state !== "idle" && <Loading/>}
+                                {dataFetcher.data && dataFetcher.data.nonProfit && dataFetcher.data.nonProfit.ein &&
+                                    <div className="flex flex-col gap-2">
+                                        <input hidden defaultValue={dataFetcher.data.nonProfit.ein} name="ein"/>
+                                        <input hidden defaultValue={dataFetcher.data.nonProfit.id} name="id"/>
                                         <div className="flex items-center gap-2">
-                                            <p>Non Profit</p>
-                                            <p>{nonProfit.name}</p>
+                                            <p>Non Profit:</p>
+                                            <p>{dataFetcher.data.nonProfit.name}</p>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <p>EIN</p>
-                                            <p>{nonProfit.ein}</p>
+                                            <p>EIN:</p>
+                                            <p>{dataFetcher.data.nonProfit.ein}</p>
                                         </div>
                                     </div>
                                 }
-                                <div className="flex items-center gap-2">
-                                    <p>Amount</p>
-                                    <input name="amount" className="border p-2 rounded-md" defaultValue={defaultAmount || 20} type="number" min="18"/>
-                                </div>
+                                {dataFetcher.state === "idle" &&
+                                    <div className="flex items-center gap-2">
+                                        <p>Amount: $</p>
+                                        <input name="amount" className="border p-2 rounded-md"
+                                               defaultValue={dataFetcher?.data?.amount || 20} type="number" min="18"/>
+                                    </div>
+                                }
                                 {/*<p>Note</p>*/}
-                                <div className="flex items-center justify-around">
-                                    <button className="p-2 border rounded-md" onClick={onClose}>Cancel</button>
+                                <div className="flex items-center gap-3">
+                                    <button className="p-2 border rounded-md flex-1" onClick={onClose}>Cancel</button>
                                     {challenge ?
-                                        <button type="submit" className="p-2 border rounded-md">Challenge your friends</button> :
-                                        <button type="submit" className="p-2 border rounded-md">Donate</button>
+                                        <button type="submit" className="p-2 border text-white rounded-md bg-green-dark flex-1">Challenge your friends</button> :
+                                        <button type="submit" className="p-2 border text-white rounded-md bg-green-dark flex-1">Donate</button>
                                     }
                                 </div>
+                                {(share || challenge) && fetcher.state !== "idle" && <Loading/>}
                                 {share && fetcher?.data?.shareUrl &&
                                     <div>
                                         <p>Invite your friends to match your donation on Daffy!</p>
