@@ -17,3 +17,10 @@ todo in the future:
 
 ![image](https://github.com/daianaszw/public-api-hack/assets/103959708/b2018411-8709-4357-b834-84f78bc2bf29)
 ![image](https://github.com/daianaszw/public-api-hack/assets/103959708/cd3c9421-57e9-4c40-b5e0-c90a1d161eea)
+
+## Docs
+
+- Create a `.env` file and add `API_KEY` and `USER_ID`
+- npm i
+- npm run dev
+- spin the wheel :)
