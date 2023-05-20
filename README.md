@@ -1,54 +1,17 @@
-# Welcome to Remix!
+# The Giving Wheel
 
-- [Remix Docs](https://remix.run/docs)
+## Want to feel more generous? Get ready to donate, gift money to your friends on Daffy and more with The Giving Wheel
 
-## Development
+todo in the future:
+- add user authentication
+- generate a public note on donations with chatgpt
+- handle api errors
 
-From your terminal:
+![image](https://github.com/daianaszw/public-api-hack/assets/103959708/d0c9d030-be41-4a3d-9473-8bff6d2a68c4)
 
-```sh
-npm run dev
-```
+<img width="1512" alt="Screenshot 2023-05-20 at 02 32 30" src="https://github.com/daianaszw/public-api-hack/assets/103959708/4c6b95f2-abfa-4137-a65f-10997d505d19">
 
-This starts your app in development mode, rebuilding assets on file changes.
+![image](https://github.com/daianaszw/public-api-hack/assets/103959708/6a0782e3-ca41-4887-bec0-7fee5cb87d91)
 
-## Deployment
+![image](https://github.com/daianaszw/public-api-hack/assets/103959708/5063655c-27fb-495b-873d-236314de415e)
 
-First, build your app for production:
-
-```sh
-npm run build
-```
-
-Then run the app in production mode:
-
-```sh
-npm start
-```
-
-Now you'll need to pick a host to deploy it to.
-
-### DIY
-
-If you're familiar with deploying node applications, the built-in Remix app server is production-ready.
-
-Make sure to deploy the output of `remix build`
-
-- `build/`
-- `public/build/`
-
-### Using a Template
-
-When you ran `npx create-remix@latest` there were a few choices for hosting. You can run that again to create a new project, then copy over your `app/` folder to the new project that's pre-configured for your target server.
-
-```sh
-cd ..
-# create a new project, and pick a pre-configured host
-npx create-remix@latest
-cd my-new-remix-app
-# remove the new project's app (not the old one!)
-rm -rf app
-# copy your app over
-cp -R ../my-old-remix-app/app app
-```
-# public-api-hack
