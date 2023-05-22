@@ -8,7 +8,7 @@ import {commitSession, getSession} from "~/services/session.server";
 
 // todo: user should authenticate
 export let loader: LoaderFunction = async ({ request }) => {
-    let causesResponse = await fetch(`https://api.daffy.org/public/api/v1/users/${process.env.USER_ID}/causes`, {
+    let causesResponse = await fetch(`https://public.daffy.org/public/api/v1/users/${process.env.USER_ID}/causes`, {
         method: "GET",
         headers: {
             "X-Api-Key": process.env.API_KEY,
@@ -45,7 +45,7 @@ export let action: ActionFunction = async ({ request }) => {
             });
         case "get-non-profit":
             let cause = session.get("cause");
-            let npResponse = await fetch(`https://api.daffy.org/public/api/v1/non_profits?cause_id=${cause || 1}`, {
+            let npResponse = await fetch(`https://public.daffy.org/public/api/v1/non_profits?cause_id=${cause || 1}`, {
                 method: "GET",
                 headers: {
                     "X-Api-Key": process.env.API_KEY,
@@ -61,7 +61,7 @@ export let action: ActionFunction = async ({ request }) => {
             return json(null);
         case "get-last-donation":
             // for now only handle the case with only 1 page of results
-            let donationsResponse = await fetch(`https://api.daffy.org/public/api/v1/users/${process.env.USER_ID}/donations`, {
+            let donationsResponse = await fetch(`https://public.daffy.org/public/api/v1/users/${process.env.USER_ID}/donations`, {
                 method: "GET",
                 headers: {
                     "X-Api-Key": process.env.API_KEY,
@@ -81,7 +81,7 @@ export let action: ActionFunction = async ({ request }) => {
             if (!amount || !ein) {
                 return json({error: "Amount/EIN cannot be empty"})
             }
-            let response = await fetch(`https://api.daffy.org/public/api/v1/users/${process.env.USER_ID}/donations`, {
+            let response = await fetch(`https://public.daffy.org/public/api/v1/users/${process.env.USER_ID}/donations`, {
                 method: "POST",
                 headers: {
                     "X-Api-Key": process.env.API_KEY,
@@ -117,7 +117,7 @@ export let action: ActionFunction = async ({ request }) => {
         case "gift":
             let name = formData.get("name")
             let amountGift = formData.get("amount")
-            let giftResponse = await fetch(`https://api.daffy.org/public/api/v1/gifts`, {
+            let giftResponse = await fetch(`https://public.daffy.org/public/api/v1/gifts`, {
                 method: "POST",
                 headers: {
                     "X-Api-Key": process.env.API_KEY,
@@ -131,7 +131,7 @@ export let action: ActionFunction = async ({ request }) => {
             let gift = await giftResponse.json()
             return json({url: gift.url});
         case "get-user":
-            let userResponse = await fetch(`https://api.daffy.org/public/api/v1/users/me`, {
+            let userResponse = await fetch(`https://public.daffy.org/public/api/v1/users/me`, {
                 method: "GET",
                 headers: {
                     "X-Api-Key": process.env.API_KEY,
